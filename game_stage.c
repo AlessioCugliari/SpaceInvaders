@@ -59,6 +59,7 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
                     switch(event.key.keysym.scancode){
                         case SDL_SCANCODE_ESCAPE:
                             *level = 0;
+                            ship_destroy(ship);
                             break;
                         case SDL_SCANCODE_D:
                         case SDL_SCANCODE_RIGHT:
