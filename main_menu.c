@@ -6,8 +6,7 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
 
-#define WINDOW_WIDTH 580
-#define WINDOW_HEIGHT 720
+#include "common.h"
 
 void main_menu(int *close_requested, SDL_Renderer *renderer, int *level){
 
@@ -75,12 +74,11 @@ void main_menu(int *close_requested, SDL_Renderer *renderer, int *level){
             switch(event.type){
                 case SDL_QUIT:
                     *close_requested = 1;
-                    //c = 1;
                     break;
             }
         }
 
-        //get cousro position relative to window
+        //get cursor position relative to window
         int mouse_x, mouse_y;
         int buttons = SDL_GetMouseState(&mouse_x,&mouse_y);
 

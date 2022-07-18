@@ -1,7 +1,13 @@
+#pragma once
+
 #ifndef _SHIP_H
 #define _SHIP_H
 
 #define SHIP_SPEED 300
+#define SHIP_T_W 80
+#define SHIP_T_H 48
+#define SHIP_TASSEL_X 16
+#define SHIP_TASSEL_Y 24
 
 typedef struct ship_t{
     int lives;
