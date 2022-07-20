@@ -10,6 +10,7 @@
 #include "laser.h"
 #include "enemy.h"
 #include "game_stage.h"
+#include "explosion.h"
 
 static void free_arr_enemy(SDL_Rect **arr){
 
@@ -27,6 +28,32 @@ static void render_arr_enemy(SDL_Rect **arr, SDL_Rect *src, SDL_Texture *texture
             SDL_RenderCopy(renderer,texture,src,&arr[i][j]);
         }
     }
+}
+
+static int hit_laser(SDL_Rect **arr, SDL_Rect *src, SDL_Rect *dest, SDL_Rect *laser, SDL_Renderer *renderer, SDL_Texture *texture){
+    
+    for(int i = 0; i < ENEMY_ROWS; i++){
+        for(int j = 0; j < ENEMY_COLS; j++){
+            if(SDL_HasIntersection(&arr[i][j],laser)){
+                
+                dest->x = arr[i][j].x;
+                dest->y = arr[i][j].y;
+                arr[i][j].w = 0;
+                arr[i][j].h = 0;
+                laser->x = 800;
+                laser->y = 800;
+                for(int k = 0; k <= 16; k ++){
+                    
+                    src->x = src->x + k;
+                    SDL_RenderCopy(renderer,texture,src,dest);
+                    
+                }
+                src->x = 0;
+                return 1;
+            }        
+        }
+    }  
+    return 0;
 }
 
 void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
@@ -58,6 +85,20 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     ship_rect_src.y = SHIP_TASSEL_Y;
     ship_rect_src.w = SHIP_TASSEL_X;
     ship_rect_src.h = SHIP_TASSEL_Y;
+
+    explosion_t *ex = explosion_init(renderer);
+    
+    SDL_Rect ex_rect_dest;
+    ex_rect_dest.x = 800;
+    ex_rect_dest.y = 800;
+    ex_rect_dest.w = EXPLOSION_TASSEL_X * 2;
+    ex_rect_dest.h = EXPLOSION_TASSEL_Y * 2;
+
+    SDL_Rect ex_rect_src;
+    ex_rect_src.x = 0;
+    ex_rect_src.y = 0;
+    ex_rect_src.w = EXPLOSION_TASSEL_X;
+    ex_rect_src.h = EXPLOSION_TASSEL_Y;
 
     laser_t *laser = laser_init(renderer);
     
@@ -181,6 +222,15 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
         SDL_RenderCopy(renderer,ship->texture,&ship_rect_src,&ship_rect_dest);
         
         render_arr_enemy(arr_enemy_rect, &enemy_rect_src, enemy->texture, renderer);
+
+        SDL_RenderCopy(renderer,ex->texture,&ex_rect_src,&ex_rect_dest);
+        
+        if(hit_laser(arr_enemy_rect, &ex_rect_src, &ex_rect_dest, &laser_rect_dest, renderer, ex->texture)){
+            laser->fired = 0;
+            laser->down = 0;
+            ex_rect_dest.x = 800;
+            ex_rect_dest.y = 800;
+        }
         
         SDL_RenderPresent(renderer);
     }
@@ -190,6 +240,7 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     Mix_FreeChunk(laser_sound);
     free_arr_enemy(arr_enemy_rect);
     enemy_destroy(enemy);
+    explosion_destroy(ex);
 
     printf("Exit Game Stage\n");
 }
