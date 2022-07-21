@@ -1,1 +1,18 @@
 # SpaceInvaders
+
+#CONTROLS
+
+You can use the following keys to control the ship:
+
+• Right Arrow or D key to move ship right <br />
+• Left arrow or A key to move the ship left <br />
+• space bar to shoot <br />
+
+#CREDITS
+
+• Sprites:  
+    ansimuz -> you can see his works here: https://ansimuz.itch.io/spaceship-shooter-environment
+  
+• Sound Effects:  
+    Swiss Arcade Game Entertainment -> you can see his works here: https://phoenix1291.itch.io/sound-effects-pack-2
+  
