@@ -68,7 +68,8 @@ void main_menu(int *close_requested, SDL_Renderer *renderer, int *level){
 
     SDL_Event event;
 
-    //int c = 0;
+    int mouse_int = 0;
+    int mouse_int_e = 0;
     while(!*close_requested){
         while(SDL_PollEvent(&event)){
             switch(event.type){
@@ -86,15 +87,32 @@ void main_menu(int *close_requested, SDL_Renderer *renderer, int *level){
         mouse_rect.y = mouse_y;
 
         //GO TO PLAY 
-        if(SDL_HasIntersection(&mouse_rect,&newgame_rect) & buttons & SDL_BUTTON(SDL_BUTTON_LEFT)){
-            printf("OK\n");
-            *level = 1;
-            break;
+        if(SDL_HasIntersection(&mouse_rect,&newgame_rect)){
+            SDL_SetTextureColorMod(new_game_texture,255,255,25);
+            mouse_int = 1;
+            if(buttons & SDL_BUTTON(SDL_BUTTON_LEFT)){
+                printf("OK\n");
+                *level = 1;
+                break;
+            }
         }
-        
+         if(mouse_int && !SDL_HasIntersection(&mouse_rect,&newgame_rect)){
+            SDL_SetTextureColorMod(new_game_texture,255,255,255);
+            mouse_int = 0;
+        }
+
         //EXIT GAME
-        if(SDL_HasIntersection(&mouse_rect,&exit_rect) & buttons & SDL_BUTTON(SDL_BUTTON_LEFT)){
-            *close_requested = 1;
+        if(SDL_HasIntersection(&mouse_rect,&exit_rect)){
+            SDL_SetTextureColorMod(exit_texture,255,255,25);
+            mouse_int_e = 1;
+            if(buttons & SDL_BUTTON(SDL_BUTTON_LEFT)){
+                *close_requested = 1;
+            }
+        }
+
+        if(mouse_int_e && !SDL_HasIntersection(&mouse_rect,&exit_rect)){
+            SDL_SetTextureColorMod(exit_texture,255,255,255);
+            mouse_int_e = 0;
         }
 
         SDL_RenderClear(renderer);
