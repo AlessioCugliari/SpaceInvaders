@@ -21,10 +21,14 @@ typedef struct laser_t{
 
 laser_t *laser_init(SDL_Renderer *renderer);
 
+laser_t *laser_init_no_tex(SDL_Renderer *renderer);
+
+void enemy_attack(laser_t *laser, SDL_Rect **arr, SDL_Rect *rect,int enemy_left);
+
 void border_limit_laser(laser_t *laser, SDL_Rect *rect);
 
 //calculates the speed and updates the position
-void calc_speed_laser(laser_t *laser);
+void calc_speed_laser(laser_t *laser, int speed);
 
 void render_laser(laser_t *laser);
 

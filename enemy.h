@@ -29,8 +29,6 @@ void calc_speed_enemy(enemy_t *enemy, int x, int w);
 //for the enemy matrix
 void update_position_matrix(SDL_Rect **arr,int *x, int *w ,int r, int c);
 
-void render_enemy(enemy_t *enemy);
-
 void enemy_destroy(enemy_t *enemy);
 
 #endif // _ENEMY_H

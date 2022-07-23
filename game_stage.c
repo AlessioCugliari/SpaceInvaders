@@ -30,25 +30,25 @@ static void render_arr_enemy(SDL_Rect **arr, SDL_Rect *src, SDL_Texture *texture
     }
 }
 
-static int hit_laser(SDL_Rect **arr, SDL_Rect *src, SDL_Rect *dest, SDL_Rect *laser, SDL_Renderer *renderer, SDL_Texture *texture){
+static int hit_laser(SDL_Rect **arr, SDL_Rect *src, SDL_Rect *dest, SDL_Rect *laser, SDL_Renderer *renderer, SDL_Texture *texture, Mix_Chunk *sound){
     
     for(int i = 0; i < ENEMY_ROWS; i++){
         for(int j = 0; j < ENEMY_COLS; j++){
             if(SDL_HasIntersection(&arr[i][j],laser)){
                 
+                Mix_PlayChannel(-1,sound,0);
                 dest->x = arr[i][j].x;
                 dest->y = arr[i][j].y;
                 arr[i][j].w = 0;
                 arr[i][j].h = 0;
                 laser->x = 800;
                 laser->y = 800;
-                for(int k = 0; k <= 16; k ++){
-                    
+                for(int k = 0; k <= EXPLOSION_T_W; k ++){
                     src->x = src->x + k;
-                    SDL_RenderCopy(renderer,texture,src,dest);
-                    
+                    SDL_RenderCopy(renderer,texture,src,dest);              
                 }
                 src->x = 0;
+
                 return 1;
             }        
         }
@@ -60,6 +60,8 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
 
     printf("GAME STAGE\n");
 
+    int n_enemy = ENEMY_ROWS*ENEMY_COLS;
+
     if(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,1024) == -1){
         printf("Mix_OpenAudio: %s\n", Mix_GetError());
         *close_requested = 1;
@@ -69,6 +71,11 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     Mix_Chunk *laser_sound = Mix_LoadWAV("audio/Laser-weapon.wav");
     if(!laser_sound){
         printf("laser_sound error: %s\n", Mix_GetError());
+    }
+
+    Mix_Chunk *explosion_sound = Mix_LoadWAV("audio/Explosion.wav");
+    if(!explosion_sound){
+        printf("explosion_sound error: %s\n", Mix_GetError());
     }
 
     ship_t *ship = ship_init(3,renderer); 
@@ -100,6 +107,7 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     ex_rect_src.w = EXPLOSION_TASSEL_X;
     ex_rect_src.h = EXPLOSION_TASSEL_Y;
 
+    //LASER
     laser_t *laser = laser_init(renderer);
     
     SDL_Rect laser_rect_dest;
@@ -113,6 +121,20 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     laser_rect_src.y = LASER_TASSEL_Y;
     laser_rect_src.w = LASER_TASSEL_X;
     laser_rect_src.h = LASER_TASSEL_Y;
+
+    laser_t *enemy_laser = laser_init_no_tex(renderer);
+
+    SDL_Rect laser_enemy_rect_dest;
+    laser_enemy_rect_dest.x = 500;
+    laser_enemy_rect_dest.y = 500;
+    laser_enemy_rect_dest.w = LASER_TASSEL_X * 3;
+    laser_enemy_rect_dest.h = LASER_TASSEL_Y * 3;
+
+    SDL_Rect laser_enemy_rect_src;
+    laser_enemy_rect_src.x = LASER_TASSEL_X;
+    laser_enemy_rect_src.y = 0;
+    laser_enemy_rect_src.w = LASER_TASSEL_X;
+    laser_enemy_rect_src.h = LASER_TASSEL_Y;
 
     enemy_t *enemy = enemy_init(renderer);
     
@@ -206,13 +228,40 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
             }
         }
  
+        //SHIP MOV
         border_limit_ship(ship,&ship_rect_dest);
         calc_speed_ship(ship);
         ship_rect_dest.x = (int)ship->x_pos;
 
+        //LASER MOV
         border_limit_laser(laser,&laser_rect_dest);
-        calc_speed_laser(laser);
+        calc_speed_laser(laser,LASER_SPEED);
         laser_rect_dest.y = (int)laser->y_pos;
+
+        //ENEMY LASER MOV
+        if(!enemy_laser->fired){
+            
+            enemy_attack(enemy_laser, arr_enemy_rect, &laser_enemy_rect_dest,n_enemy);
+            enemy_laser->y_pos = (float)laser_enemy_rect_dest.y;
+        }
+       
+        //border_limit_laser(enemy_laser,&laser_enemy_rect_dest);
+        calc_speed_laser(enemy_laser,-LASER_SPEED);
+        laser_enemy_rect_dest.y = (int)enemy_laser->y_pos;
+        if(enemy_laser->y_pos >= WINDOW_HEIGHT){
+            //enemy_laser->y_pos = 0.0;
+            enemy_laser->fired = 0;
+            enemy_laser->down = 0;
+            enemy_laser->speed_y = 0;
+            laser_enemy_rect_dest.x = 700;
+        }
+        if(SDL_HasIntersection(&ship_rect_dest,&laser_enemy_rect_dest)){
+            ship->lives--;
+            enemy_laser->fired = 0;
+            enemy_laser->down = 0;
+            enemy_laser->speed_y = 0;
+            laser_enemy_rect_dest.x = 700;
+        }
 
         update_position_matrix(arr_enemy_rect,&curr_x,&matrix_w_pos,ENEMY_ROWS,ENEMY_COLS);
         
@@ -220,16 +269,19 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
 
         SDL_RenderCopy(renderer,laser->texture,&laser_rect_src,&laser_rect_dest);
         SDL_RenderCopy(renderer,ship->texture,&ship_rect_src,&ship_rect_dest);
+        SDL_RenderCopy(renderer,laser->texture,&laser_enemy_rect_src,&laser_enemy_rect_dest);
         
         render_arr_enemy(arr_enemy_rect, &enemy_rect_src, enemy->texture, renderer);
 
         SDL_RenderCopy(renderer,ex->texture,&ex_rect_src,&ex_rect_dest);
         
-        if(hit_laser(arr_enemy_rect, &ex_rect_src, &ex_rect_dest, &laser_rect_dest, renderer, ex->texture)){
+        if(hit_laser(arr_enemy_rect, &ex_rect_src, &ex_rect_dest, &laser_rect_dest, renderer, ex->texture, explosion_sound)){
             laser->fired = 0;
             laser->down = 0;
             ex_rect_dest.x = 800;
             ex_rect_dest.y = 800;
+            n_enemy--;
+            printf("%d\n", n_enemy);
         }
         
         SDL_RenderPresent(renderer);
@@ -237,7 +289,9 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
 
     ship_destroy(ship);
     laser_destroy(laser);
+    free(enemy_laser);
     Mix_FreeChunk(laser_sound);
+    Mix_FreeChunk(explosion_sound);
     free_arr_enemy(arr_enemy_rect);
     enemy_destroy(enemy);
     explosion_destroy(ex);

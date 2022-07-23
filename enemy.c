@@ -72,7 +72,11 @@ void update_position_matrix(SDL_Rect **arr,int *x, int *w, int r, int c){
 
     *w += step;
     *x += step;
+    //updates the position of the array 
+    //when it reaches the edges of the window 
+    //and reverses the direction of the steps
     if(*w > WINDOW_WIDTH || *x < 0){
+        //reverse direction
         step = step * -1;
 
         for(int i = 0; i < r; i++){
@@ -81,7 +85,7 @@ void update_position_matrix(SDL_Rect **arr,int *x, int *w, int r, int c){
             }
         }
     }
-    
+    //Update the x position by 1 at time
     for(int i = 0; i < r; i++){
         for(int j = 0; j < c; j++){
             arr[i][j].x += step;
