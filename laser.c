@@ -58,26 +58,22 @@ void enemy_attack(laser_t *laser, SDL_Rect **arr, SDL_Rect *rect,int enemy_left)
     
     srand(time(NULL));
     int n = 0;
+    int temp = enemy_left;
     for(int i = 0; i < ENEMY_ROWS; i++){
         for(int j = 0; j < ENEMY_COLS; j++){
-            if(arr[i][j].x != 800){
-                n = rand() % enemy_left;
-                if(n == 1){
+            if(arr[i][j].w != 0){
+                //n = rand() % enemy_left;
+                n = rand() % temp;
+                if(n <= 1){
                     //fire
                     rect->x = arr[i][j].x + (LASER_TASSEL_X / 3);
                     rect->y = arr[i][j].y;
                     laser->fired = 1;
                     laser->down = 1;
-                    
-                    /*printf("pos y arr[%d][%d] in ene mat %d\n",i,j,arr[i][j].y);
-                    printf("pos x arr[%d][%d] in ene mat %d\n",i,j,arr[i][j].x);
-                    printf("pos y REC[%d][%d] in ene mat %d\n",i,j,rect->y);
-                    printf("pos x REC[%d][%d] in ene mat %d\n",i,j,rect->x);*/
-
                 }
                 
-            }else{
-                enemy_left--;
+            }else if(temp > 1){
+                temp--;
             }
         }
     } 
@@ -94,8 +90,6 @@ void border_limit_laser(laser_t *laser, SDL_Rect *rect){
     
     if(laser->y_pos >= WINDOW_HEIGHT - rect->h) laser->y_pos = WINDOW_HEIGHT - rect->h;
     
-    
-    //if(laser->y_pos <= 0) printf("_pos %f \n",laser->y_pos);
 }
 
 void calc_speed_laser(laser_t *laser, int speed){

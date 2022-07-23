@@ -39,6 +39,7 @@ static int hit_laser(SDL_Rect **arr, SDL_Rect *src, SDL_Rect *dest, SDL_Rect *la
                 Mix_PlayChannel(-1,sound,0);
                 dest->x = arr[i][j].x;
                 dest->y = arr[i][j].y;
+                //reduce size to not display the enemy ship
                 arr[i][j].w = 0;
                 arr[i][j].h = 0;
                 laser->x = 800;
@@ -186,14 +187,12 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
                             k = 4;
                             ship->right = 1;
                             ship_rect_src.x = SHIP_TASSEL_X * k;
-                            //printf("press D %d\n",ship_rect_src.x);
                             break;
                         case SDL_SCANCODE_A:
                         case SDL_SCANCODE_LEFT:
                             k = 0;
                             ship->left = 1;
                             ship_rect_src.x = SHIP_TASSEL_X * k;
-                            //printf("press A %d\n",ship_rect_src.x);
                             break;
                         case SDL_SCANCODE_SPACE:
                             if(!laser->fired){
@@ -214,14 +213,12 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
                             k = 2;
                             ship->right = 0;
                             ship_rect_src.x = SHIP_TASSEL_X * k;
-                            //printf("release d %d\n",ship_rect_src.x);
                             break;
                         case SDL_SCANCODE_A:
                         case SDL_SCANCODE_LEFT:
                             k = 2;
                             ship->left = 0;
                             ship_rect_src.x = SHIP_TASSEL_X * k;
-                            //printf("release a %d\n",ship_rect_src.x);
                             break;
                     }
                     break;
