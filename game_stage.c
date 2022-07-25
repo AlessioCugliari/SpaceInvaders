@@ -44,12 +44,7 @@ static int hit_laser(SDL_Rect **arr, SDL_Rect *src, SDL_Rect *dest, SDL_Rect *la
                 arr[i][j].h = 0;
                 laser->x = 800;
                 laser->y = 800;
-                for(int k = 0; k <= EXPLOSION_T_W; k ++){
-                    src->x = src->x + k;
-                    SDL_RenderCopy(renderer,texture,src,dest);              
-                }
-                src->x = 0;
-
+            
                 return 1;
             }        
         }
@@ -62,6 +57,7 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     printf("GAME STAGE\n");
 
     int n_enemy = ENEMY_ROWS*ENEMY_COLS;
+    int hit = 0, step = 0, count = 0;
 
     if(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,1024) == -1){
         printf("Mix_OpenAudio: %s\n", Mix_GetError());
@@ -99,8 +95,8 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     SDL_Rect ex_rect_dest;
     ex_rect_dest.x = 800;
     ex_rect_dest.y = 800;
-    ex_rect_dest.w = EXPLOSION_TASSEL_X * 2;
-    ex_rect_dest.h = EXPLOSION_TASSEL_Y * 2;
+    ex_rect_dest.w = EXPLOSION_TASSEL_X * 3;
+    ex_rect_dest.h = EXPLOSION_TASSEL_Y * 3;
 
     SDL_Rect ex_rect_src;
     ex_rect_src.x = 0;
@@ -275,11 +271,25 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
         if(hit_laser(arr_enemy_rect, &ex_rect_src, &ex_rect_dest, &laser_rect_dest, renderer, ex->texture, explosion_sound)){
             laser->fired = 0;
             laser->down = 0;
-            ex_rect_dest.x = 800;
-            ex_rect_dest.y = 800;
             n_enemy--;
             printf("%d\n", n_enemy);
+            hit = 1;
+            
         }
+        //To render the explosion
+        if(hit){
+            if(!(count % EXPLOSION_TASSEL_X)){
+                step++;
+            }
+            count+=4; 
+            ex_rect_src.x = EXPLOSION_TASSEL_X*step;
+            if(count >= EXPLOSION_T_W){
+                count = 0;
+                step = 0;
+                hit = 0;
+            }
+        } 
+        SDL_RenderCopy(renderer,ex->texture,&ex_rect_src,&ex_rect_dest);  
         
         SDL_RenderPresent(renderer);
     }
