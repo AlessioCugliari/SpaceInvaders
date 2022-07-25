@@ -57,7 +57,7 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     printf("GAME STAGE\n");
 
     int n_enemy = ENEMY_ROWS*ENEMY_COLS;
-    int hit = 0, step = 0, count = 0;
+    int hit = 0, step = 0, frame = 0;
 
     if(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,1024) == -1){
         printf("Mix_OpenAudio: %s\n", Mix_GetError());
@@ -232,9 +232,8 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
         laser_rect_dest.y = (int)laser->y_pos;
 
         //ENEMY LASER MOV
-        if(!enemy_laser->fired){
-            
-            enemy_attack(enemy_laser, arr_enemy_rect, &laser_enemy_rect_dest,n_enemy);
+        if(!enemy_laser->fired){    
+            if(n_enemy) enemy_attack(enemy_laser, arr_enemy_rect, &laser_enemy_rect_dest,n_enemy);
             enemy_laser->y_pos = (float)laser_enemy_rect_dest.y;
         }
        
@@ -278,13 +277,13 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
         }
         //To render the explosion
         if(hit){
-            if(!(count % EXPLOSION_TASSEL_X)){
+            if(!(frame % EXPLOSION_TASSEL_X)){
                 step++;
             }
-            count+=4; 
+            frame += 4; 
             ex_rect_src.x = EXPLOSION_TASSEL_X*step;
-            if(count >= EXPLOSION_T_W){
-                count = 0;
+            if(frame >= EXPLOSION_T_W){
+                frame = 0;
                 step = 0;
                 hit = 0;
             }

@@ -58,24 +58,22 @@ void enemy_attack(laser_t *laser, SDL_Rect **arr, SDL_Rect *rect,int enemy_left)
     
     srand(time(NULL));
     int n = 0;
-    int temp = enemy_left;
+    int temp = rand() % enemy_left + 1;
+    
     for(int i = 0; i < ENEMY_ROWS; i++){
         for(int j = 0; j < ENEMY_COLS; j++){
-            if(arr[i][j].w != 0){
-                //n = rand() % enemy_left;
-                n = rand() % temp;
-                if(n <= 1){
+            if(arr[i][j].w != 0){               
+                n++;
+                if(n == temp){
                     //fire
                     rect->x = arr[i][j].x + (LASER_TASSEL_X / 3);
                     rect->y = arr[i][j].y;
                     laser->fired = 1;
                     laser->down = 1;
                 }
-                
-            }else if(temp > 1){
-                temp--;
             }
         }
+
     } 
 
 }
