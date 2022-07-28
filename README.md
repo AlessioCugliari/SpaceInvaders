@@ -11,8 +11,11 @@ You can use the following keys to control the ship:
 #CREDITS
 
 • Sprites:  
-    ansimuz -> you can see his works here: https://ansimuz.itch.io/spaceship-shooter-environment
+    ansimuz -> https://ansimuz.itch.io/spaceship-shooter-environment
   
 • Sound Effects:  
-    Swiss Arcade Game Entertainment -> you can see his works here: https://phoenix1291.itch.io/sound-effects-pack-2
+    Swiss Arcade Game Entertainment -> https://phoenix1291.itch.io/sound-effects-pack-2
+    
+• Music:  
+    Goose Ninja -> https://gooseninja.itch.io/space-music-pack
   
