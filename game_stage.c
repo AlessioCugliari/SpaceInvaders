@@ -58,6 +58,7 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
 
     int n_enemy = ENEMY_ROWS*ENEMY_COLS;
     int hit = 0, step = 0, frame = 0;
+    //int e_hit = 0, e_step = 0, e_hit_frame = 0;
 
     if(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,1024) == -1){
         printf("Mix_OpenAudio: %s\n", Mix_GetError());
@@ -73,6 +74,11 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     Mix_Chunk *explosion_sound = Mix_LoadWAV("audio/Explosion.wav");
     if(!explosion_sound){
         printf("explosion_sound error: %s\n", Mix_GetError());
+    }
+
+    Mix_Music *music = Mix_LoadMUS("audio/battle.wav");
+    if(!music){
+        printf("music error: %s\n", Mix_GetError());
     }
 
     ship_t *ship = ship_init(3,renderer); 
@@ -166,6 +172,9 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     enemy_rect_src.w = ENEMY_TASSEL_X;
     enemy_rect_src.h = ENEMY_TASSEL_Y;
 
+    /*int r,g,b;
+    SDL_GetTextureColorMod(ship->texture,&r,&g,&b);*/
+
     SDL_Event event;
     while(!*close_requested && *level){
         while(SDL_PollEvent(&event)){
@@ -220,6 +229,11 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
                     break;
             }
         }
+
+        //music 
+        if(!Mix_PlayingMusic()){
+            Mix_PlayMusic(music, -1);
+        }
  
         //SHIP MOV
         border_limit_ship(ship,&ship_rect_dest);
@@ -247,12 +261,16 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
             enemy_laser->speed_y = 0;
             laser_enemy_rect_dest.x = 700;
         }
+        //enemy laser hit
         if(SDL_HasIntersection(&ship_rect_dest,&laser_enemy_rect_dest)){
             ship->lives--;
             enemy_laser->fired = 0;
             enemy_laser->down = 0;
             enemy_laser->speed_y = 0;
             laser_enemy_rect_dest.x = 700;
+            /*e_hit = 1;
+            SDL_SetTextureColorMod(ship->texture,250,0,0);
+            SDL_SetTextureColorMod(ship->texture,r,g,b);*/
         }
 
         update_position_matrix(arr_enemy_rect,&curr_x,&matrix_w_pos,ENEMY_ROWS,ENEMY_COLS);
@@ -298,6 +316,7 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     free(enemy_laser);
     Mix_FreeChunk(laser_sound);
     Mix_FreeChunk(explosion_sound);
+    Mix_FreeMusic(music);
     free_arr_enemy(arr_enemy_rect);
     enemy_destroy(enemy);
     explosion_destroy(ex);
