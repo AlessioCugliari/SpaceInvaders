@@ -15,6 +15,14 @@ void main_menu(int *close_requested, SDL_Renderer *renderer, int *level){
         exit(EXIT_FAILURE);        
     }
 
+    /*if(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,1024) == -1){
+        printf("Mix_OpenAudio: %s\n", Mix_GetError());
+        *close_requested = 1;
+        return;
+    }
+
+    Mix_Chunk *click_sound = mix_chunk_load("audio/click.wav");*/
+
     SDL_Color white = {255,255,255};
 
     TTF_Font *font = TTF_OpenFont("font/Games.ttf",32);
@@ -92,6 +100,7 @@ void main_menu(int *close_requested, SDL_Renderer *renderer, int *level){
             mouse_int = 1;
             if(buttons & SDL_BUTTON(SDL_BUTTON_LEFT)){
                 printf("OK\n");
+                //Mix_PlayChannel(-1,click_sound,0);
                 *level = 1;
                 break;
             }
@@ -106,7 +115,9 @@ void main_menu(int *close_requested, SDL_Renderer *renderer, int *level){
             SDL_SetTextureColorMod(exit_texture,255,255,25);
             mouse_int_e = 1;
             if(buttons & SDL_BUTTON(SDL_BUTTON_LEFT)){
+                //Mix_PlayChannel(-1,click_sound,0);
                 *close_requested = 1;
+                *level = 0;
             }
         }
 
@@ -128,6 +139,7 @@ void main_menu(int *close_requested, SDL_Renderer *renderer, int *level){
     SDL_DestroyTexture(game_title_texture);
     SDL_DestroyTexture(new_game_texture);
     SDL_DestroyTexture(exit_texture);
+    //Mix_FreeChunk(click_sound);
     TTF_CloseFont(font);
     printf("Main_menu_exit\n");
 }

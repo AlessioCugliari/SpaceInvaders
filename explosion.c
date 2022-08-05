@@ -34,12 +34,6 @@ explosion_t *explosion_init(SDL_Renderer *renderer){
 
 }
 
-void border_limit_explosion(explosion_t *explosion, SDL_Rect *rect);
-
-void calc_speed_explosion(explosion_t *explosion);
-
-//void render_explosion(explosion_t *explosion);
-
 void explosion_destroy(explosion_t *explosion){
 
     SDL_DestroyTexture(explosion->texture);

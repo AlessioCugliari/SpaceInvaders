@@ -12,6 +12,15 @@
 #include "game_stage.h"
 #include "explosion.h"
 
+void set_rect(SDL_Rect *rect, int x, int y, int w, int h){
+
+    rect->x = x;
+    rect->y = y;
+    rect->w = w;
+    rect->h = h;
+
+}
+
 static void free_arr_enemy(SDL_Rect **arr){
 
     for(int i = 0; i < ENEMY_ROWS; i++){
@@ -52,13 +61,29 @@ static int hit_laser(SDL_Rect **arr, SDL_Rect *src, SDL_Rect *dest, SDL_Rect *la
     return 0;
 }
 
+static int game_over(int n_enemy, int lives, int y_pos){
+    if(lives == 0 || y_pos > 500){
+        printf("Defeat\n");
+        return 1;
+    }
+    if(n_enemy == 0){
+        printf("Vicotiy\n");
+        return 2;
+    }
+
+    return 0;
+}
+
 void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
 
     printf("GAME STAGE\n");
 
     int n_enemy = ENEMY_ROWS*ENEMY_COLS;
     int hit = 0, step = 0, frame = 0;
+    int game_status = 0;
     //int e_hit = 0, e_step = 0, e_hit_frame = 0;
+
+    TTF_Font *font = text_init("font/Games.ttf");
 
     if(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,1024) == -1){
         printf("Mix_OpenAudio: %s\n", Mix_GetError());
@@ -66,28 +91,15 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
         return;
     }
 
-    Mix_Chunk *laser_sound = Mix_LoadWAV("audio/Laser-weapon.wav");
-    if(!laser_sound){
-        printf("laser_sound error: %s\n", Mix_GetError());
-    }
+    Mix_Chunk *laser_sound = mix_chunk_load("audio/Laser-weapon.wav");
+    Mix_Chunk *explosion_sound = mix_chunk_load("audio/Explosion.wav");
 
-    Mix_Chunk *explosion_sound = Mix_LoadWAV("audio/Explosion.wav");
-    if(!explosion_sound){
-        printf("explosion_sound error: %s\n", Mix_GetError());
-    }
-
-    Mix_Music *music = Mix_LoadMUS("audio/battle.wav");
-    if(!music){
-        printf("music error: %s\n", Mix_GetError());
-    }
+    Mix_Music *music = music_load("audio/battle.wav");
 
     ship_t *ship = ship_init(3,renderer); 
 
     SDL_Rect ship_rect_dest;
-    ship_rect_dest.x = WINDOW_WIDTH / 2; 
-    ship_rect_dest.y = WINDOW_HEIGHT - 80;
-    ship_rect_dest.w = SHIP_TASSEL_X * 3;
-    ship_rect_dest.h = SHIP_TASSEL_Y * 3;
+    set_rect(&ship_rect_dest, WINDOW_WIDTH / 2, WINDOW_HEIGHT - 80, SHIP_TASSEL_X * 3, SHIP_TASSEL_Y * 3);
 
     int k = 2;
     SDL_Rect ship_rect_src;
@@ -99,45 +111,27 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     explosion_t *ex = explosion_init(renderer);
     
     SDL_Rect ex_rect_dest;
-    ex_rect_dest.x = 800;
-    ex_rect_dest.y = 800;
-    ex_rect_dest.w = EXPLOSION_TASSEL_X * 3;
-    ex_rect_dest.h = EXPLOSION_TASSEL_Y * 3;
-
+    set_rect(&ex_rect_dest, 800, 800, EXPLOSION_TASSEL_X * 3, EXPLOSION_TASSEL_X * 3);
+    
     SDL_Rect ex_rect_src;
-    ex_rect_src.x = 0;
-    ex_rect_src.y = 0;
-    ex_rect_src.w = EXPLOSION_TASSEL_X;
-    ex_rect_src.h = EXPLOSION_TASSEL_Y;
-
+    set_rect(&ex_rect_src, 0, 0, EXPLOSION_TASSEL_X, EXPLOSION_TASSEL_Y);
+    
     //LASER
     laser_t *laser = laser_init(renderer);
     
     SDL_Rect laser_rect_dest;
-    laser_rect_dest.x = 800;
-    laser_rect_dest.y = 800;
-    laser_rect_dest.w = LASER_TASSEL_X * 3;
-    laser_rect_dest.h = LASER_TASSEL_Y * 3;
+    set_rect(&laser_rect_dest, 800, 800, LASER_TASSEL_X * 3, LASER_TASSEL_Y * 3);
 
     SDL_Rect laser_rect_src;
-    laser_rect_src.x = LASER_TASSEL_X;
-    laser_rect_src.y = LASER_TASSEL_Y;
-    laser_rect_src.w = LASER_TASSEL_X;
-    laser_rect_src.h = LASER_TASSEL_Y;
+    set_rect(&laser_rect_src, LASER_TASSEL_X, LASER_TASSEL_Y, LASER_TASSEL_X, LASER_TASSEL_Y);
 
     laser_t *enemy_laser = laser_init_no_tex(renderer);
 
     SDL_Rect laser_enemy_rect_dest;
-    laser_enemy_rect_dest.x = 500;
-    laser_enemy_rect_dest.y = 500;
-    laser_enemy_rect_dest.w = LASER_TASSEL_X * 3;
-    laser_enemy_rect_dest.h = LASER_TASSEL_Y * 3;
+    set_rect(&laser_enemy_rect_dest, 500, 500, LASER_TASSEL_X * 3, LASER_TASSEL_Y * 3);
 
     SDL_Rect laser_enemy_rect_src;
-    laser_enemy_rect_src.x = LASER_TASSEL_X;
-    laser_enemy_rect_src.y = 0;
-    laser_enemy_rect_src.w = LASER_TASSEL_X;
-    laser_enemy_rect_src.h = LASER_TASSEL_Y;
+    set_rect(&laser_enemy_rect_src, LASER_TASSEL_X, 0, LASER_TASSEL_X, LASER_TASSEL_Y);
 
     enemy_t *enemy = enemy_init(renderer);
     
@@ -167,11 +161,8 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     curr_x = e_t_x;
 
     SDL_Rect enemy_rect_src;
-    enemy_rect_src.x = ENEMY_TASSEL_X;
-    enemy_rect_src.y = 0;
-    enemy_rect_src.w = ENEMY_TASSEL_X;
-    enemy_rect_src.h = ENEMY_TASSEL_Y;
-
+    set_rect(&enemy_rect_src, ENEMY_TASSEL_X, 0, ENEMY_TASSEL_X, ENEMY_TASSEL_Y);
+    
     /*int r,g,b;
     SDL_GetTextureColorMod(ship->texture,&r,&g,&b);*/
 
@@ -185,6 +176,7 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
                 case SDL_KEYDOWN:
                     switch(event.key.keysym.scancode){
                         case SDL_SCANCODE_ESCAPE:
+                            //GO TO THE MAIN MENU WITH ESC KEY
                             *level = 0;
                             break;
                         case SDL_SCANCODE_D:
@@ -273,6 +265,13 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
             SDL_SetTextureColorMod(ship->texture,r,g,b);*/
         }
 
+        //game over check
+        game_status = game_over(n_enemy,ship->lives,500);
+        if(game_status){
+            *close_requested = 1;
+            break;
+        }
+
         update_position_matrix(arr_enemy_rect,&curr_x,&matrix_w_pos,ENEMY_ROWS,ENEMY_COLS);
         
         SDL_RenderClear(renderer);
@@ -309,6 +308,76 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
         SDL_RenderCopy(renderer,ex->texture,&ex_rect_src,&ex_rect_dest);  
         
         SDL_RenderPresent(renderer);
+    }
+
+    if(game_status){
+        
+        int x = (WINDOW_WIDTH - 500) >> 1;
+        SDL_Rect rect;
+        set_rect(&rect,x,250,500,200);
+        
+        SDL_Rect second_line_rect;
+        set_rect(&second_line_rect,x,450,500,50);
+
+        SDL_Color white = {255,255,255};
+        SDL_Color grey  = {182,182,182};
+
+        SDL_Surface *surf;
+        SDL_Texture *texture;
+        SDL_Texture *second_line_texture;
+
+        *close_requested = 0;
+
+        int mouse_x, mouse_y;
+        int buttons = 0;
+
+        if(game_status == 1){
+            //DEFEAT
+            surf = TTF_RenderText_Solid(font,"DEFEAT", white);
+            texture = SDL_CreateTextureFromSurface(renderer,surf);
+
+            surf = TTF_RenderText_Solid(font,"click anywhere to return to the main menu",grey);
+            second_line_texture = SDL_CreateTextureFromSurface(renderer,surf);
+            SDL_FreeSurface(surf);
+        }
+        else{
+            //VICOTRY
+            surf = TTF_RenderText_Solid(font,"VICTORY", white);
+            texture = SDL_CreateTextureFromSurface(renderer,surf);
+
+            surf = TTF_RenderText_Solid(font,"click anywhere to return to the main menu",grey);
+            second_line_texture = SDL_CreateTextureFromSurface(renderer,surf);
+            SDL_FreeSurface(surf);
+        }
+
+        while(!*close_requested && *level){
+            while(SDL_PollEvent(&event)){
+                switch(event.type){
+                    case SDL_QUIT:
+                        *close_requested = 1;
+                        break;
+                    case SDL_KEYDOWN:
+                        switch(event.key.keysym.scancode){
+                            case SDL_SCANCODE_ESCAPE:
+                                //GO TO THE MAIN MENU
+                                *level = 0;
+                                break;
+                        }
+                }
+            }
+            //get cursor position relative to window
+            buttons = SDL_GetMouseState(&mouse_x,&mouse_y);
+            //exit with left click
+            if(buttons & SDL_BUTTON(SDL_BUTTON_LEFT)){
+                *level = 0;
+            }
+            SDL_RenderCopy(renderer,texture,NULL,&rect);
+            SDL_RenderCopy(renderer,second_line_texture,NULL,&second_line_rect);
+            SDL_RenderPresent(renderer);
+        }
+
+        TTF_CloseFont(font);
+        SDL_DestroyTexture(texture);
     }
 
     ship_destroy(ship);

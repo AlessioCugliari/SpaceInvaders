@@ -10,9 +10,6 @@
 #include "game_stage.h"
 #include "ship.h"
 
-/*#define WINDOW_WIDTH 580
-#define WINDOW_HEIGHT 720*/
-
 int mix_wasInit = 0;
 
 void init_all(){
