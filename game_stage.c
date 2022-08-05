@@ -12,15 +12,6 @@
 #include "game_stage.h"
 #include "explosion.h"
 
-void set_rect(SDL_Rect *rect, int x, int y, int w, int h){
-
-    rect->x = x;
-    rect->y = y;
-    rect->w = w;
-    rect->h = h;
-
-}
-
 static void free_arr_enemy(SDL_Rect **arr){
 
     for(int i = 0; i < ENEMY_ROWS; i++){

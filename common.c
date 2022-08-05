@@ -20,6 +20,14 @@ void handle_error(char *msg, int mix_wasInit){
     //exit(EXIT_FAILURE);
 }
 
+void set_rect(SDL_Rect *rect, int x, int y, int w, int h){
+
+    rect->x = x;
+    rect->y = y;
+    rect->w = w;
+    rect->h = h;
+}
+
 TTF_Font *text_init(char *path){
 
     if(!TTF_WasInit()){
