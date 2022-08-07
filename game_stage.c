@@ -72,7 +72,8 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     int n_enemy = ENEMY_ROWS*ENEMY_COLS;
     int hit = 0, step = 0, frame = 0;
     int game_status = 0;
-    char live_string[2];
+    char live_string[4];
+    int score = 0;
     //int e_hit = 0, e_step = 0, e_hit_frame = 0;
 
     SDL_Color white = {255,255,255};
@@ -86,9 +87,18 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     SDL_Texture *live_texture = SDL_CreateTextureFromSurface(renderer,live_surf);
     live_surf = TTF_RenderText_Solid(font,"3", white);
     SDL_Texture *number_texture = SDL_CreateTextureFromSurface(renderer,live_surf);
-    
+    live_surf = TTF_RenderText_Solid(font,"Score:", white);
+    SDL_Texture *score_texture = SDL_CreateTextureFromSurface(renderer,live_surf);
+    live_surf = TTF_RenderText_Solid(font,"0", white);
+    SDL_Texture *score_c_texture = SDL_CreateTextureFromSurface(renderer,live_surf);
+
     SDL_Rect live_n_rect;
     set_rect(&live_n_rect,95,13,20,40);
+
+    SDL_Rect score_rect;
+    set_rect(&score_rect,420,13,80,40);
+    SDL_Rect score_c_rect;
+    set_rect(&score_c_rect,510,13,20,40);
 
     if(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,1024) == -1){
         printf("Mix_OpenAudio: %s\n", Mix_GetError());
@@ -286,8 +296,13 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
         render_arr_enemy(arr_enemy_rect, &enemy_rect_src, enemy->texture, renderer);
 
         SDL_RenderCopy(renderer,ex->texture,&ex_rect_src,&ex_rect_dest);
+        
+        //lives counter & score
         SDL_RenderCopy(renderer,live_texture,NULL,&live_rect);
         SDL_RenderCopy(renderer,number_texture,NULL,&live_n_rect);
+        
+        SDL_RenderCopy(renderer,score_texture,NULL,&score_rect);
+        SDL_RenderCopy(renderer,score_c_texture,NULL,&score_c_rect);
 
         //game over check
         game_status = game_over(n_enemy,ship->lives,500);
@@ -296,11 +311,25 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
             break;
         }
 
+        //MY LASER HIT
         if(hit_laser(arr_enemy_rect, &ex_rect_src, &ex_rect_dest, &laser_rect_dest, renderer, ex->texture, explosion_sound)){
             laser->fired = 0;
             laser->down = 0;
             n_enemy--;
+            score += 20;
+            
+            //increase the size of the score counter to make room for the new digit
+            if(score == 20){
+                score_c_rect.w += 20;
+            }
+            if(score == 100){
+                score_c_rect.w += 20;
+            }
+
+            sprintf(live_string,"%d",score);
             printf("%d\n", n_enemy);
+            live_surf = TTF_RenderText_Solid(font,live_string, white);
+            score_c_texture = SDL_CreateTextureFromSurface(renderer,live_surf);
             hit = 1;
             
         }
@@ -400,6 +429,8 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     explosion_destroy(ex);
     SDL_DestroyTexture(live_texture);
     SDL_DestroyTexture(number_texture);
+    SDL_DestroyTexture(score_c_texture);
+    SDL_DestroyTexture(score_texture);
     SDL_FreeSurface(live_surf);
 
     printf("Exit Game Stage\n");
