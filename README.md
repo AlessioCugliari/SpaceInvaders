@@ -7,6 +7,7 @@ You can use the following keys to control the ship:
 • Right Arrow or D key to move ship right <br />
 • Left arrow or A key to move the ship left <br />
 • SpaceBar to shoot <br />
+• ESC key to return to the main menu <br />
 
 #CREDITS
 
