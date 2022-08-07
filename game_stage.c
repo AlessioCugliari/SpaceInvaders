@@ -72,9 +72,23 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     int n_enemy = ENEMY_ROWS*ENEMY_COLS;
     int hit = 0, step = 0, frame = 0;
     int game_status = 0;
+    char live_string[2];
     //int e_hit = 0, e_step = 0, e_hit_frame = 0;
 
+    SDL_Color white = {255,255,255};
+    SDL_Color grey  = {182,182,182};
+
     TTF_Font *font = text_init("font/Games.ttf");
+
+    SDL_Rect live_rect;
+    set_rect(&live_rect,10,10,80,40);
+    SDL_Surface *live_surf = TTF_RenderText_Solid(font,"Live(s):", white);
+    SDL_Texture *live_texture = SDL_CreateTextureFromSurface(renderer,live_surf);
+    live_surf = TTF_RenderText_Solid(font,"3", white);
+    SDL_Texture *number_texture = SDL_CreateTextureFromSurface(renderer,live_surf);
+    
+    SDL_Rect live_n_rect;
+    set_rect(&live_n_rect,95,13,20,40);
 
     if(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,1024) == -1){
         printf("Mix_OpenAudio: %s\n", Mix_GetError());
@@ -132,14 +146,15 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
         arr_enemy_rect[i] = malloc(ENEMY_COLS*sizeof(SDL_Rect));
     }
 
-    int e_t_x = ENEMY_TASSEL_X * 1.5; 
-    int e_t_y = ENEMY_TASSEL_Y * 1.5;
-    int curr_x = 0;
+    //Set the initial position of the enemy matrix
+    int e_t_x = ENEMY_TASSEL_X * 1.5;   //resizing for the original image width 
+    int e_t_y = ENEMY_TASSEL_Y * 1.5;   //resizing for the original image height 
+    int curr_x = 0;                     //steps counter to set the distance between ships
     for(int i = 0; i < ENEMY_ROWS; i++){
         curr_x += e_t_x;
         for(int j = 0; j < ENEMY_COLS; j++){
             arr_enemy_rect[i][j].x = curr_x;
-            arr_enemy_rect[i][j].y = (j * e_t_y) + LASER_TASSEL_Y;
+            arr_enemy_rect[i][j].y = (j * e_t_y) + LASER_TASSEL_Y + 50;
             arr_enemy_rect[i][j].w = e_t_x;
             arr_enemy_rect[i][j].h = e_t_y;
             
@@ -251,10 +266,28 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
             enemy_laser->down = 0;
             enemy_laser->speed_y = 0;
             laser_enemy_rect_dest.x = 700;
+            sprintf(live_string,"%d",ship->lives);
+            live_surf = TTF_RenderText_Solid(font,live_string, white);
+            number_texture = SDL_CreateTextureFromSurface(renderer,live_surf);
             /*e_hit = 1;
             SDL_SetTextureColorMod(ship->texture,250,0,0);
             SDL_SetTextureColorMod(ship->texture,r,g,b);*/
+            
         }
+
+        update_position_matrix(arr_enemy_rect,&curr_x,&matrix_w_pos,ENEMY_ROWS,ENEMY_COLS);
+        
+        SDL_RenderClear(renderer);
+        
+        SDL_RenderCopy(renderer,laser->texture,&laser_rect_src,&laser_rect_dest);
+        SDL_RenderCopy(renderer,ship->texture,&ship_rect_src,&ship_rect_dest);
+        SDL_RenderCopy(renderer,laser->texture,&laser_enemy_rect_src,&laser_enemy_rect_dest);
+        
+        render_arr_enemy(arr_enemy_rect, &enemy_rect_src, enemy->texture, renderer);
+
+        SDL_RenderCopy(renderer,ex->texture,&ex_rect_src,&ex_rect_dest);
+        SDL_RenderCopy(renderer,live_texture,NULL,&live_rect);
+        SDL_RenderCopy(renderer,number_texture,NULL,&live_n_rect);
 
         //game over check
         game_status = game_over(n_enemy,ship->lives,500);
@@ -263,18 +296,6 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
             break;
         }
 
-        update_position_matrix(arr_enemy_rect,&curr_x,&matrix_w_pos,ENEMY_ROWS,ENEMY_COLS);
-        
-        SDL_RenderClear(renderer);
-
-        SDL_RenderCopy(renderer,laser->texture,&laser_rect_src,&laser_rect_dest);
-        SDL_RenderCopy(renderer,ship->texture,&ship_rect_src,&ship_rect_dest);
-        SDL_RenderCopy(renderer,laser->texture,&laser_enemy_rect_src,&laser_enemy_rect_dest);
-        
-        render_arr_enemy(arr_enemy_rect, &enemy_rect_src, enemy->texture, renderer);
-
-        SDL_RenderCopy(renderer,ex->texture,&ex_rect_src,&ex_rect_dest);
-        
         if(hit_laser(arr_enemy_rect, &ex_rect_src, &ex_rect_dest, &laser_rect_dest, renderer, ex->texture, explosion_sound)){
             laser->fired = 0;
             laser->down = 0;
@@ -309,9 +330,6 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
         
         SDL_Rect second_line_rect;
         set_rect(&second_line_rect,x,450,500,50);
-
-        SDL_Color white = {255,255,255};
-        SDL_Color grey  = {182,182,182};
 
         SDL_Surface *surf;
         SDL_Texture *texture;
@@ -380,6 +398,9 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     free_arr_enemy(arr_enemy_rect);
     enemy_destroy(enemy);
     explosion_destroy(ex);
+    SDL_DestroyTexture(live_texture);
+    SDL_DestroyTexture(number_texture);
+    SDL_FreeSurface(live_surf);
 
     printf("Exit Game Stage\n");
 }
