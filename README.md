@@ -12,7 +12,8 @@ You can use the following keys to control the ship:
 #CREDITS
 
 • Sprites:  
-    ansimuz -> https://ansimuz.itch.io/spaceship-shooter-environment
+    ansimuz -> https://ansimuz.itch.io/spaceship-shooter-environment  
+            -> https://ansimuz.itch.io/patreons-top-down-collection  
   
 • Sound Effects:  
     Swiss Arcade Game Entertainment -> https://phoenix1291.itch.io/sound-effects-pack-2
