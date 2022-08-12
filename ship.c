@@ -17,7 +17,7 @@ ship_t *ship_init(int lives, SDL_Renderer *renderer){
     ship->x_pos = WINDOW_WIDTH / 2;
     ship->y_pos = WINDOW_HEIGHT - 80;
 
-    SDL_Surface *surf = IMG_Load("texture/ship.png");
+    SDL_Surface *surf = IMG_Load("texture/ship5.png");
     if(!surf){
         printf("Can not load surface for ship %s", SDL_GetError());
         exit(EXIT_FAILURE);

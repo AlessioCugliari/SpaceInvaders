@@ -19,4 +19,8 @@ Mix_Chunk *mix_chunk_load(char *path);
 
 Mix_Music *music_load(char *path);
 
+SDL_Texture *texture_load(char *path, SDL_Renderer *renderer);
+
+int animation_update(int *frame, int *step, SDL_Rect *src, int tassel_x, int texture_witdh);
+
 #endif // _COMMON_H

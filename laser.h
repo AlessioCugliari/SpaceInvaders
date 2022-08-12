@@ -32,6 +32,8 @@ void calc_speed_laser(laser_t *laser, int speed);
 
 void render_laser(laser_t *laser);
 
+void laser_hit_reset(laser_t *laser);
+
 void laser_destroy(laser_t *laser);
 
 #endif // _LASER_H

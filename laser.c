@@ -98,6 +98,12 @@ void calc_speed_laser(laser_t *laser, int speed){
     laser->y_pos += laser->speed_y / FPS;
 }
 
+void laser_hit_reset(laser_t *laser){
+    laser->fired = 0;
+    laser->down = 0;
+    laser->speed_y = 0;
+}
+
 void laser_destroy(laser_t *laser){
 
     SDL_DestroyTexture(laser->texture);

@@ -4,10 +4,16 @@
 #define _SHIP_H
 
 #define SHIP_SPEED 300
-#define SHIP_T_W 80
+/*#define SHIP_T_W 80
 #define SHIP_T_H 48
 #define SHIP_TASSEL_X 16
-#define SHIP_TASSEL_Y 24
+#define SHIP_TASSEL_Y 24*/
+
+#define SHIP_T_W 78
+#define SHIP_T_H 26
+#define SHIP_TASSEL_X 27
+#define SHIP_TASSEL_Y 26
+
 
 typedef struct ship_t{
     int lives;

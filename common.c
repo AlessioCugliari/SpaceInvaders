@@ -61,3 +61,43 @@ Mix_Music *music_load(char *path){
  
     return music;
 }
+
+SDL_Texture *texture_load(char *path, SDL_Renderer *renderer){
+
+    SDL_Surface *surf = IMG_Load(path);
+    if(!surf){
+        printf("Can not load surface %s", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer,surf);
+
+    //free surf we don't need anymore
+    SDL_FreeSurface(surf);
+
+    if(!texture){
+        printf("Can not load texture %s", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    printf("texture load %s ok\n",path);
+
+    return texture;
+}
+
+int animation_update(int *frame, int *step, SDL_Rect *src, int tassel_x, int texture_witdh){
+
+    int temp = *step;
+    temp++;
+
+    if(!(*frame % tassel_x)){
+        *step = temp;
+    }
+    *frame += 4; 
+    src->x = tassel_x*(*step);
+    if(*frame >= texture_witdh){
+        *frame = 0;     //reset frame to 0 for the next animetion
+        *step = 0;      //reset step to 0 for the next animetion
+        return 0;       //set the animation variable to 0
+    }
+    return 1;
+}
