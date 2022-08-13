@@ -30,8 +30,7 @@ void border_limit_laser(laser_t *laser, SDL_Rect *rect);
 //calculates the speed and updates the position
 void calc_speed_laser(laser_t *laser, int speed);
 
-void render_laser(laser_t *laser);
-
+//reset the coordinate after a collison
 void laser_hit_reset(laser_t *laser);
 
 void laser_destroy(laser_t *laser);

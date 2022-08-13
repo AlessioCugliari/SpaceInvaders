@@ -36,7 +36,6 @@ static int hit_laser(SDL_Rect **arr, SDL_Rect *dest, SDL_Rect *laser, SDL_Render
         for(int j = 0; j < c; j++){
             if(SDL_HasIntersection(&arr[i][j],laser)){
 
-                //Mix_PlayChannel(-1,sound,0);
                 dest->x = arr[i][j].x;  //Set x for explosion 
                 dest->y = arr[i][j].y;  //set y for explosion
                 //reduce size to not display the enemy ship
@@ -160,6 +159,7 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     int n_enemy = ENEMY_ROWS*ENEMY_COLS;
     int hit = 0, step = 0, frame = 0;
     int hit_a = 0, step_a = 0, frame_a = 0;
+    int flash = 0;
     int game_status = 0;
     char live_string[4];
     int score = 0;
@@ -198,6 +198,8 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     Mix_Chunk *explosion_sound = mix_chunk_load("audio/Explosion.wav");
 
     Mix_Music *music = music_load("audio/battle.wav");
+    Mix_Volume(-1, 10);
+    Mix_VolumeMusic(50);
 
     ship_t *ship = ship_init(3,renderer); 
 
@@ -236,6 +238,11 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     set_rect(&laser_enemy_rect_dest, 500, 500, LASER_TASSEL_X * 3, LASER_TASSEL_Y * 3);
     SDL_Rect laser_enemy_rect_src;
     set_rect(&laser_enemy_rect_src, LASER_TASSEL_X, 0, LASER_TASSEL_X, LASER_TASSEL_Y);
+
+    //EFFECT for laser
+    SDL_Texture *flash_texture = texture_load("texture/flash.png",renderer);
+    SDL_Rect flash_rect;
+    set_rect(&flash_rect,0,0,24,24);
 
     //ENEMY
     enemy_t *enemy = enemy_init(renderer);
@@ -304,12 +311,15 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
                             break;
                         case SDL_SCANCODE_SPACE:
                             if(!laser->fired){
-                                laser_rect_dest.x = ship_rect_dest.x  + 20;
+                                laser_rect_dest.x = ship_rect_dest.x + 20;
                                 laser_rect_dest.y = ship_rect_dest.y;
                                 laser->down = 1;
                                 laser->y_pos = laser_rect_dest.y;
                                 laser->fired = 1;
                                 Mix_PlayChannel(-1,laser_sound,0);
+                                flash_rect.x = laser_rect_dest.x + 9;
+                                flash_rect.y = laser_rect_dest.y - 10;
+                                flash = 3;
                             } 
                             break;
                     }
@@ -380,6 +390,18 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
 
         update_position_matrix(arr_enemy_rect,&curr_x,&matrix_w_pos,ENEMY_ROWS,ENEMY_COLS);
         
+        //game over check
+        game_status = game_over(n_enemy,ship->lives,500);
+        if(game_status){
+            //Make the textures a bit transparent at the end of the game because it looks good :P
+            SDL_SetTextureAlphaMod(ship->texture,100);
+            SDL_SetTextureAlphaMod(laser->texture,100);
+            SDL_SetTextureAlphaMod(enemy->texture,100);
+            SDL_SetTextureAlphaMod(aste_texture,100);
+            SDL_SetTextureAlphaMod(ex->texture,100);
+            SDL_SetTextureAlphaMod(flash_texture,100);
+        }
+
         SDL_RenderClear(renderer);
         
         SDL_RenderCopy(renderer,laser->texture,&laser_rect_src,&laser_rect_dest);
@@ -392,6 +414,11 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
 
         SDL_RenderCopy(renderer,ex->texture,&ex_rect_src,&ex_rect_dest);
         
+        if(flash >= 0){
+            SDL_RenderCopy(renderer,flash_texture,NULL,&flash_rect);
+            flash--;
+        }
+
         //lives counter & score
         SDL_RenderCopy(renderer,live_texture,NULL,&live_rect);
         SDL_RenderCopy(renderer,number_texture,NULL,&live_n_rect);
@@ -400,7 +427,6 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
         SDL_RenderCopy(renderer,score_c_texture,NULL,&score_c_rect);
 
         //game over check
-        game_status = game_over(n_enemy,ship->lives,500);
         if(game_status){
             *close_requested = 1;
             break;
@@ -480,6 +506,7 @@ void game_stage(int *close_requested, SDL_Renderer *renderer, int *level){
     SDL_DestroyTexture(score_c_texture);
     SDL_DestroyTexture(score_texture);
     SDL_DestroyTexture(aste_texture);
+    SDL_DestroyTexture(flash_texture);
     SDL_FreeSurface(live_surf);
     TTF_CloseFont(font);
 
